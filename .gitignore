@@ -1,0 +1,31 @@
+# Python sanal ortam klasörleri
+venv/
+env/
+ENV/
+
+# Python derlenmiş bayt kodları ve önbellekler
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Yüz değiştirme uygulaması yüklemeleri ve geçici klasörler
+uploads/
+*.jpg
+*.jpeg
+*.png
+
+# Yapay zeka model dosyaları (Çok büyük oldukları için GitHub'a atılmazlar, sonradan indirilirler)
+models/
+
+# IDE ayarları (VS Code, PyCharm vb.)
+.vscode/
+.idea/
+*.suo
+*.ntvs
+*.njsproj
+*.sln
+*.swp
+
+# İşletim sistemi kalıntıları
+.DS_Store
+Thumbs.db
