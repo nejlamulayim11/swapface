@@ -1,0 +1,27 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: face_swap_mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  backend:
+    build: ./backend
+    container_name: face_swap_backend
+    restart: always
+    ports:
+      - "7860:7860"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/
+      - DB_NAME=face_swap_db
+    depends_on:
+      - mongodb
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/models:/app/models
+
+volumes:
+  mongo_data:
