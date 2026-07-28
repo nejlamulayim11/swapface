@@ -36,6 +36,9 @@ function App() {
   const [progressText, setProgressText] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   
+  // Yasal Uyarı ve Rıza Beyanı State'i
+  const [consentChecked, setConsentChecked] = useState(false);
+  
   const [results, setResults] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   
@@ -339,6 +342,12 @@ function App() {
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (files.length === 0) { showToast("Dosya seçin!"); return; }
+    
+    // Rıza ve Kullanım Şartları Kontrolü
+    if (!consentChecked) {
+      showToast("Lütfen sadece kendi fotoğrafınızı veya yasal izne sahip olduğunuzu onaylayın.");
+      return;
+    }
 
     const formData = new FormData();
     files.forEach(file => formData.append('file', file));
@@ -350,7 +359,6 @@ function App() {
     setProgress(15); 
     setProgressText('Fotoğraflar sunucuya yükleniyor... %15');
 
-    // Sunucu işlem yaparken çubuğun donmaması için akış simülasyonu interval'ı
     let currentProgress = 15;
     const progressInterval = setInterval(() => {
       if (currentProgress < 40) {
@@ -368,7 +376,7 @@ function App() {
       const response = await fetchWithAuth(`${API_BASE}/upload`, { method: 'POST', body: formData });
       const data = await response.json();
 
-      clearInterval(progressInterval); // Sunucudan yanıt geldiğinde döngüyü durdur
+      clearInterval(progressInterval);
 
       if (response.ok && data.success) {
         setProgress(100); 
@@ -658,6 +666,21 @@ function App() {
                         <option value="age">Yaşa Göre</option>
                         <option value="smile">Gülümseyenler</option>
                       </select>
+                    </div>
+
+                    {/* Riza Beyani ve Kullanim Sartlari Checkbox */}
+                    <div style={{ width: '100%', maxWidth: '600px', background: 'rgba(255,102,51,0.05)', border: '1px solid rgba(255,102,51,0.2)', padding: '15px 20px', borderRadius: '16px', textAlign: 'left' }}>
+                      <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.5' }}>
+                        <input 
+                          type="checkbox" 
+                          checked={consentChecked} 
+                          onChange={(e) => setConsentChecked(e.target.checked)} 
+                          style={{ marginTop: '3px', accentColor: 'var(--lime)', width: '16px', height: '16px', cursor: 'pointer' }} 
+                        />
+                        <span>
+                          Sadece <b>kendi fotoğrafımı</b> veya yasal olarak yükleme iznine sahip olduğum kişilerin fotoğraflarını yüklediğimi; telif haklarını, KVKK ve kişilik haklarını ihlal etmeyeceğimi kabul ve beyan ederim.
+                        </span>
+                      </label>
                     </div>
 
                     <div style={{ width: '100%', maxWidth: '600px', marginTop: '10px' }}>
