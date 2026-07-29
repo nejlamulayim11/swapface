@@ -36,7 +36,7 @@ function App() {
   const [progressText, setProgressText] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   
-  // Yasal Uyarı ve Rıza Beyanı State'i
+  // Kullanım Şartları ve Rıza Beyanı State'i
   const [consentChecked, setConsentChecked] = useState(false);
   
   const [results, setResults] = useState([]);
@@ -342,10 +342,10 @@ function App() {
   const handleSubmit = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
     if (files.length === 0) { showToast("Dosya seçin!"); return; }
-    
-    // Rıza ve Kullanım Şartları Kontrolü
+
+    // Rıza ve Kullanım Şartları Onay Kontrolü
     if (!consentChecked) {
-      showToast("Lütfen sadece kendi fotoğrafınızı veya yasal izne sahip olduğunuzu onaylayın.");
+      showToast("Lütfen yükleme şartlarını onaylayın.");
       return;
     }
 
@@ -668,7 +668,7 @@ function App() {
                       </select>
                     </div>
 
-                    {/* Riza Beyani ve Kullanim Sartlari Checkbox */}
+                    {/* Kullanım Şartları ve Rıza Beyanı */}
                     <div style={{ width: '100%', maxWidth: '600px', background: 'rgba(255,102,51,0.05)', border: '1px solid rgba(255,102,51,0.2)', padding: '15px 20px', borderRadius: '16px', textAlign: 'left' }}>
                       <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer', fontSize: '13px', color: 'rgba(255,255,255,0.85)', lineHeight: '1.5' }}>
                         <input 
