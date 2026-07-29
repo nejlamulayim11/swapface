@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-const API_BASE = 'http://localhost:7860';
+const API_BASE = 'https://hyperfaceswap.com.tr/api';
 
 function App() {
   const [currentSlide, setCurrentSlide] = useState(1);
