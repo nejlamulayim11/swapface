@@ -18,7 +18,7 @@ app.config['SECRET_KEY'] = 'gizli-anahtar-kelime-12345'
 
 # --- MONGODB BAĞLANTI KONTROLÜ ---
 try:
-    client = MongoClient('mongodb://localhost:27017/', serverSelectionTimeoutMS=2000)
+    client = MongoClient("mongodb://face_swap_mongo:27017/", serverSelectionTimeoutMS=2000)
     client.server_info()
     db = client['face_swap_db']
     users_collection = db['users']

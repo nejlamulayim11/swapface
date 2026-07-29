@@ -1,7 +1,7 @@
 import os
 
 SECRET_KEY = 'gizli-anahtar-kelime-12345'
-MONGO_URI = 'mongodb://localhost:27017/'
+MONGO_URI = 'mongodb://face_swap_mongo:27017/'
 DB_NAME = 'face_swap_db'
 
 # E-Posta Ayarları

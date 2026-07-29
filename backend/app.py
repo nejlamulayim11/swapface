@@ -45,4 +45,4 @@ for theme_name in ['1980', '2050', 'child', 'elderly']:
 app.register_blueprint(api_bp)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7860, debug=True)
+    app.run(host="0.0.0.0", port=7860)
