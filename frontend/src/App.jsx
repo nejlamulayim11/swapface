@@ -353,6 +353,7 @@ function App() {
     files.forEach(file => formData.append('file', file));
     formData.append('swap_mode', swapMode);
     formData.append('theme', theme); 
+    formData.append('mode', theme); // Backend'in beklediği 'mode' parametresini de ekledik!  
 
     setLoading(true); 
     setErrorMsg(''); 
