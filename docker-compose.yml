@@ -16,3 +16,6 @@ services:
       - "7860:7860"
     depends_on:
       - face_swap_mongo
+    volumes:
+      - ./backend/models:/home/user/app/models
+      - ./uploads:/home/user/app/uploads

@@ -127,6 +127,7 @@ def upload_files():
         
         files = request.files.getlist('file')
         swap_mode = request.form.get('swap_mode', 'random')
+        app_mode = request.form.get('mode', 'standart') # Arayüzden gelen aktif konsept modu (örn: standart, 1980s, cocukluk vb.)
         
         if not files or files[0].filename == '':
             return jsonify({'success': False, 'error': 'Hiçbir dosya seçilmedi!'}), 400
@@ -161,8 +162,16 @@ def upload_files():
                         face_data.append({'image': img, 'faces': faces_in_img})
 
         num_total_faces = len(all_faces_pool)
-        if num_total_faces < 2:
-            return jsonify({'success': False, 'error': f"Yüklenen görsellerde toplam en az 2 yüz algılanmalı! (Algılanan: {num_total_faces})"}), 400
+        
+        # Mod kontrolü: Standart dışı konseptlerde (1980ler, çocukluk vb.) tek yüz yeterli olabilir. 
+        # Ancak standart veya fixed/random çoklu yüz modunda en az 2 yüz aranır.
+        min_required_faces = 2 if app_mode == 'standart' else 1
+        
+        if num_total_faces < min_required_faces:
+            if min_required_faces == 2:
+                return jsonify({'success': False, 'error': f"Yüklenen görsellerde toplam en az 2 yüz algılanmalı! (Algılanan: {num_total_faces})"}), 400
+            else:
+                return jsonify({'success': False, 'error': f"Yüklenen görselde en az 1 yüz algılanmalı! (Algılanan: {num_total_faces})"}), 400
 
         if swap_mode == 'fixed' and num_total_faces > 0:
             chosen_source_face = all_faces_pool[0]
@@ -215,6 +224,7 @@ def upload_files():
         print(f"İşlem Hatası: {e}")
         return jsonify({'success': False, 'error': f'Sunucu işleme hatası: {str(e)}'}), 500
 
+@app.delete('/delete-history') # Veya post, projedeki route yapısına sadık kalarak aşağıdaki gibi bırakıldı
 @app.route('/delete-history', methods=['POST'])
 @login_required
 def delete_history():
