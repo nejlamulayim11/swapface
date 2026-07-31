@@ -202,7 +202,6 @@ def logout():
 
 @api_bp.route('/me', methods=['GET'])
 def get_me():
-    # Hem Authorization Bearer Token hem de Cookie/Flask-Session desteği
     auth_header = request.headers.get('Authorization')
     user_data = None
     
@@ -347,7 +346,8 @@ def upload_files():
         if len(all_faces_pool) > 0:
             user_gender = get_sex(all_faces_pool[0])
 
-        if theme != 'default':
+        # GÜNCELLENEN KESİN KONTROL: Tema aktifse ve klasör mevcutsa şablonları yükle
+        if theme and theme != 'default' and theme != 'undefined':
             theme_folder = os.path.join(config.THEMES_BASE_FOLDER, theme)
             if os.path.exists(theme_folder):
                 theme_files = [f for f in os.listdir(theme_folder) if allowed_file(f)]
@@ -370,13 +370,13 @@ def upload_files():
 
         num_total_faces = len(all_faces_pool)
         
-        # KESİN ÇÖZÜM: Standart modda en az 2 yüz, tema modunda en az 1 yüz zorunluluğu
-        if theme == 'default' and num_total_faces < 2:
+        # YÜZ SAYISI KONTROLÜ: Standart modda en az 2 yüz, tema modunda yüklenen fotoğrafta en az 1 yüz yeterlidir.
+        if (not theme or theme == 'default' or theme == 'undefined') and num_total_faces < 2:
             return jsonify({'success': False, 'error': f"Standart modda en az 2 yüz olmalı! (Bulunan: {num_total_faces})"}), 400
-        if theme != 'default' and num_total_faces < 1:
+        if theme and theme != 'default' and theme != 'undefined' and num_total_faces < 1:
             return jsonify({'success': False, 'error': "Lütfen yüz içeren bir fotoğraf yükleyin!"}), 400
         if used_theme and len(target_images_data) == 0:
-            return jsonify({'success': False, 'error': "Bu konsept klasöründe uygun stok fotoğraf bulunamadı!"}), 400
+            return jsonify({'success': False, 'error': "Bu konsept klasöründe cinsiyetinize uygun stok fotoğraf bulunamadı!"}), 400
 
         if swap_mode == 'fixed' and num_total_faces > 0:
             chosen_source_face = all_faces_pool[0]
