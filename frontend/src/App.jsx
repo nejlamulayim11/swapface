@@ -36,7 +36,6 @@ function App() {
   const [progressText, setProgressText] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   
-  // Kullanım Şartları ve Rıza Beyanı State'i
   const [consentChecked, setConsentChecked] = useState(false);
   
   const [results, setResults] = useState([]);
@@ -117,7 +116,9 @@ function App() {
   const fetchWithAuth = async (url, options = {}) => {
     let token = localStorage.getItem('access_token');
     let headers = options.headers || {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (token && token !== 'undefined' && token !== 'null') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     if (!options.body || !(options.body instanceof FormData)) {
         headers['Content-Type'] = headers['Content-Type'] || 'application/json';
     }
@@ -343,7 +344,6 @@ function App() {
     if (e && e.preventDefault) e.preventDefault();
     if (files.length === 0) { showToast("Dosya seçin!"); return; }
 
-    // Rıza ve Kullanım Şartları Onay Kontrolü
     if (!consentChecked) {
       showToast("Lütfen yükleme şartlarını onaylayın.");
       return;
@@ -353,7 +353,7 @@ function App() {
     files.forEach(file => formData.append('file', file));
     formData.append('swap_mode', swapMode);
     formData.append('theme', theme); 
-    formData.append('mode', theme); // Backend'in beklediği 'mode' parametresini de ekledik!  
+    formData.append('mode', theme); 
 
     setLoading(true); 
     setErrorMsg(''); 
