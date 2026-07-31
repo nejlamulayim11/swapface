@@ -4,18 +4,28 @@ services:
   face_swap_mongo:
     image: mongo:latest
     container_name: face_swap_mongo
-    restart: always
     ports:
       - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
 
   backend:
-    build: .
+    build: 
+      context: ./backend
     container_name: face_swap_backend
-    restart: always
     ports:
       - "7860:7860"
+    environment:
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+    volumes:
+      - ./backend/uploads:/home/user/app/uploads
+      - ./backend/themes:/home/user/app/themes
+      - ./backend/models:/home/user/app/models
     depends_on:
       - face_swap_mongo
-    volumes:
-      - ./backend/models:/home/user/app/models
-      - ./uploads:/home/user/app/uploads
+    restart: always
+
+volumes:
+  mongo_data:

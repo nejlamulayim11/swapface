@@ -1,11 +1,14 @@
-FROM python:3.10-slim-bullseye
+# Python 3.10 tabanlı hafif bir imaj kullanıyoruz
+FROM python:3.10-slim
 
+# Görüntü işleme (OpenCV) için gerekli sistem kütüphaneleri
 RUN apt-get update && apt-get install -y \
-    libgl1 \
+    libgl1-mesa-glx \
     libglib2.0-0 \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
 
+# Hugging Face Spaces güvenlik gereksinimi: Standart kullanıcı (UID 1000)
 RUN useradd -m -u 1000 user
 USER user
 ENV HOME=/home/user \
@@ -13,16 +16,15 @@ ENV HOME=/home/user \
 
 WORKDIR $HOME/app
 
+# Sadece requirements.txt kopyalanıp bağımlılıklar yükleniyor
 COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-USER root
-RUN find /usr/local/lib/python3.10 -name "*.so" -exec execstack -c {} \; 2>/dev/null || true
-RUN find /home/user/.local -name "*.so" -exec execstack -c {} \; 2>/dev/null || true
-USER user
-
+# Geri kalan tüm proje dosyaları (app.py, templates, models vb.) kopyalanıyor
 COPY --chown=user . .
 
+# Flask'ın çalışacağı varsayılan port
 EXPOSE 7860
 
+# Uygulamayı başlat
 CMD ["python", "app.py"]

@@ -88,6 +88,7 @@ def login():
     email = request.form.get('email')
     password = request.form.get('password')
     user_data = users_collection.find_one({'email': email})
+
     
     if user_data and check_password_hash(user_data['password'], password):
         role = user_data.get('role', 'user')
