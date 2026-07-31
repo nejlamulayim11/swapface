@@ -8,6 +8,7 @@ from werkzeug.utils import secure_filename
 import numpy as np
 import jwt
 import smtplib
+import uuid
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -311,7 +312,7 @@ def upload_files():
         files = request.files.getlist('file')
         
         swap_mode = request.form.get('swap_mode', 'random') 
-        theme = request.form.get('theme', 'default')
+        theme = request.form.get('theme') or request.form.get('mode', 'default')
         
         if not files or files[0].filename == '':
             return jsonify({'success': False, 'error': 'Hiçbir dosya seçilmedi!'}), 400
@@ -380,8 +381,11 @@ def upload_files():
 
         num_total_faces = len(all_faces_pool)
         
+        # GÜNCELLENEN KONTROL: Eğer tema aktif değilse en az 2 yüz aranır. Tema aktifse (çocukluk, 1980'ler vb.) tek yüz (en az 1) yeterlidir.
         if not used_theme and num_total_faces < 2:
             return jsonify({'success': False, 'error': f"Standart modda en az 2 yüz olmalı! (Bulunan: {num_total_faces})"}), 400
+        if used_theme and num_total_faces < 1:
+            return jsonify({'success': False, 'error': "Lütfen yüz içeren bir fotoğraf yükleyin!"}), 400
         if used_theme and len(target_images_data) == 0:
             return jsonify({'success': False, 'error': "Bu konsept klasöründe cinsiyetinize uygun stok fotoğraf bulunamadı!"}), 400
 
@@ -426,7 +430,9 @@ def upload_files():
                     candidates = [f for f in shuffled_pool if get_sex(f) == target_sex and not np.array_equal(f.embedding, target_face.embedding)]
                     
                     if used_theme and not candidates:
-                        continue
+                        candidates = [f for f in shuffled_pool if get_sex(f) == target_sex]
+                    if used_theme and not candidates:
+                        candidates = shuffled_pool
 
                     if not candidates and not used_theme:
                         candidates = [f for f in shuffled_pool if not np.array_equal(f.embedding, target_face.embedding)]
