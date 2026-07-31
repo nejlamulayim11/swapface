@@ -10,12 +10,10 @@ from routes import api_bp
 app = Flask(__name__)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
-# CORS ayarları (Frontend ile haberleşme için tam yetki)
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -37,13 +35,11 @@ def load_user(user_id):
         pass
     return None
 
-# Gerekli yükleme ve tema klasörlerinin oluşturulması
 os.makedirs(config.BASE_UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(config.THEMES_BASE_FOLDER, exist_ok=True)
 for theme_name in ['1980', '2050', 'child', 'elderly']:
     os.makedirs(os.path.join(config.THEMES_BASE_FOLDER, theme_name), exist_ok=True)
 
-# Blueprint kaydı (API rotalarını ana uygulamaya bağlar)
 app.register_blueprint(api_bp)
 
 @app.route('/')

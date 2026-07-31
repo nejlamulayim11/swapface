@@ -70,12 +70,8 @@ def register():
     
     hashed_password = generate_password_hash(password, method='scrypt')
     user_id = users_collection.insert_one({
-        'username': username, 
-        'email': email, 
-        'password': hashed_password, 
-        'role': 'user',
-        'scopes': DEFAULT_USER_SCOPES,
-        'token_version': 0
+        'username': username, 'email': email, 'password': hashed_password, 
+        'role': 'user', 'scopes': DEFAULT_USER_SCOPES, 'token_version': 0
     }).inserted_id
     
     new_user = User(user_id, username, email, hashed_password, 'user', DEFAULT_USER_SCOPES, 0)
@@ -83,13 +79,8 @@ def register():
     access_token, refresh_token = generate_tokens(user_id, 'user', DEFAULT_USER_SCOPES, 0)
     
     return jsonify({
-        'success': True, 
-        'message': 'Kayıt başarılı!', 
-        'username': username, 
-        'role': 'user',
-        'scopes': DEFAULT_USER_SCOPES,
-        'access_token': access_token, 
-        'refresh_token': refresh_token
+        'success': True, 'message': 'Kayıt başarılı!', 'username': username, 
+        'role': 'user', 'scopes': DEFAULT_USER_SCOPES, 'access_token': access_token, 'refresh_token': refresh_token
     })
 
 @api_bp.route('/login', methods=['POST'])
@@ -108,13 +99,8 @@ def login():
         access_token, refresh_token = generate_tokens(user_data['_id'], role, scopes, tv)
         
         return jsonify({
-            'success': True, 
-            'message': 'Giriş başarılı!', 
-            'username': user.username, 
-            'role': role, 
-            'scopes': scopes,
-            'access_token': access_token, 
-            'refresh_token': refresh_token
+            'success': True, 'message': 'Giriş başarılı!', 'username': user.username, 
+            'role': role, 'scopes': scopes, 'access_token': access_token, 'refresh_token': refresh_token
         })
     return jsonify({'success': False, 'error': 'Geçersiz e-posta veya şifre!'}), 400
 
@@ -132,10 +118,7 @@ def forgot_password():
         reset_token = jwt.encode(reset_payload, config.SECRET_KEY, algorithm='HS256')
         print(f"\n[SİMÜLASYON] Sıfırlama Linki: http://localhost:5173?reset_token={reset_token}\n")
 
-    return jsonify({
-        'success': True, 
-        'message': 'Eğer kayıtlıysa, şifre sıfırlama bağlantısı gönderildi.'
-    })
+    return jsonify({'success': True, 'message': 'Eğer kayıtlıysa, şifre sıfırlama bağlantısı gönderildi.'})
 
 @api_bp.route('/reset-password', methods=['POST'])
 def reset_password():
@@ -204,7 +187,6 @@ def logout():
 def get_me():
     auth_header = request.headers.get('Authorization')
     user_data = None
-    
     if auth_header and auth_header.startswith('Bearer '):
         try:
             token = auth_header.split(" ")[1]
@@ -219,20 +201,13 @@ def get_me():
     if user_data:
         role = user_data.get('role', 'user')
         scopes = user_data.get('scopes', ADMIN_SCOPES if role == 'admin' else DEFAULT_USER_SCOPES)
-        return jsonify({
-            'success': True, 
-            'username': user_data.get('username'), 
-            'role': role,
-            'scopes': scopes
-        })
+        return jsonify({'success': True, 'username': user_data.get('username'), 'role': role, 'scopes': scopes})
     return jsonify({'success': False}), 401
 
 @api_bp.route('/history', methods=['GET'])
 def get_history():
     auth_header = request.headers.get('Authorization')
-    user_id = None
-    user_role = "user"
-    user_scopes = DEFAULT_USER_SCOPES
+    user_id, user_role, user_scopes = None, "user", DEFAULT_USER_SCOPES
 
     if auth_header and auth_header.startswith('Bearer '):
         try:
@@ -257,11 +232,7 @@ def get_history():
     user_history = []
     records = history_collection.find(query).sort('created_at', -1)
     for r in records:
-        user_history.append({
-            'image_url': r['image_url'],
-            'original_url': r.get('original_url', r['image_url']),
-            '_id': str(r['_id'])
-        })
+        user_history.append({'image_url': r['image_url'], 'original_url': r.get('original_url', r['image_url']), '_id': str(r['_id'])})
     return jsonify({'success': True, 'history': user_history})
 
 @api_bp.route('/contact', methods=['POST'])
@@ -270,7 +241,6 @@ def contact_message():
     name, email, message = data.get('name'), data.get('email'), data.get('message')
     if not name or not email or not message:
         return jsonify({'success': False, 'error': 'Tüm alanları doldurun!'}), 400
-
     messages_collection.insert_one({'name': name, 'email': email, 'message': message, 'created_at': time.time()})
     send_email_notification(name, email, message)
     return jsonify({'success': True, 'message': 'Mesajınız iletildi!'})
@@ -346,7 +316,7 @@ def upload_files():
         if len(all_faces_pool) > 0:
             user_gender = get_sex(all_faces_pool[0])
 
-        # GÜNCELLENEN KESİN KONTROL: Tema aktifse ve klasör mevcutsa şablonları yükle
+        # KESİN ÇÖZÜM: Hangi mod seçilirse seçilsin (child, 1980 vb.), tema klasörünü bul ve eşleştir
         if theme and theme != 'default' and theme != 'undefined':
             theme_folder = os.path.join(config.THEMES_BASE_FOLDER, theme)
             if os.path.exists(theme_folder):
@@ -370,13 +340,17 @@ def upload_files():
 
         num_total_faces = len(all_faces_pool)
         
-        ## KESİN ÇÖZÜM: Eğer şablon (tema) kullanılıyorsa VEYA toplam yüz sayısı 1 ve üzeri ise hata verme, 
-# sadece standart modda ve 2'den az yüz varsa engelle.
-        if not used_theme and theme == 'default' and num_total_faces < 2:
+        # MUTLAK YÜZ KONTROLÜ: Standart modda min 2 yüz, Konsept modlarında tek fotoğraf (min 1 yüz) yeterlidir!
+        is_concept_mode = theme and theme != 'default' and theme != 'undefined'
+        
+        if not is_concept_mode and num_total_faces < 2:
             return jsonify({'success': False, 'error': f"Standart modda en az 2 yüz olmalı! (Bulunan: {num_total_faces})"}), 400
-
-        if num_total_faces < 1:
+        
+        if is_concept_mode and num_total_faces < 1:
             return jsonify({'success': False, 'error': "Lütfen yüz içeren bir fotoğraf yükleyin!"}), 400
+            
+        if used_theme and len(target_images_data) == 0:
+            return jsonify({'success': False, 'error': "Bu konsept klasöründe cinsiyetinize uygun stok fotoğraf bulunamadı!"}), 400
 
         if swap_mode == 'fixed' and num_total_faces > 0:
             chosen_source_face = all_faces_pool[0]
@@ -495,11 +469,8 @@ def get_all_users():
     users_list = []
     for u in users_collection.find(query).sort('_id', -1).skip(skip).limit(limit):
         users_list.append({
-            'id': str(u['_id']),
-            'username': u.get('username', ''),
-            'email': u.get('email', ''),
-            'role': u.get('role', 'user'),
-            'scopes': u.get('scopes', DEFAULT_USER_SCOPES)
+            'id': str(u['_id']), 'username': u.get('username', ''),
+            'email': u.get('email', ''), 'role': u.get('role', 'user'), 'scopes': u.get('scopes', DEFAULT_USER_SCOPES)
         })
     return jsonify({'success': True, 'users': users_list, 'total': total_users, 'page': page, 'total_pages': (total_users + limit - 1) // limit})
 
@@ -531,6 +502,7 @@ def delete_user(target_user_id):
     history_collection.delete_many({'user_id': target_user_id})
     return jsonify({'success': True, 'message': 'Kullanıcı silindi.'})
 
+@api_bp.uploads_folder = getattr(config, 'BASE_UPLOAD_FOLDER', 'uploads')
 @api_bp.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     if request.args.get('dl') == '1':
