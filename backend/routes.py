@@ -381,10 +381,10 @@ def upload_files():
 
         num_total_faces = len(all_faces_pool)
         
-        # GÜNCELLENEN KONTROL: Eğer tema aktif değilse en az 2 yüz aranır. Tema aktifse (çocukluk, 1980'ler vb.) tek yüz (en az 1) yeterlidir.
-        if not used_theme and num_total_faces < 2:
+        # DÜZELTİLDİ: Tema seçiliyse (theme != 'default') en az 1 yüz yeterlidir, aksi halde standart modda en az 2 yüz aranır.
+        if theme == 'default' and num_total_faces < 2:
             return jsonify({'success': False, 'error': f"Standart modda en az 2 yüz olmalı! (Bulunan: {num_total_faces})"}), 400
-        if used_theme and num_total_faces < 1:
+        if theme != 'default' and num_total_faces < 1:
             return jsonify({'success': False, 'error': "Lütfen yüz içeren bir fotoğraf yükleyin!"}), 400
         if used_theme and len(target_images_data) == 0:
             return jsonify({'success': False, 'error': "Bu konsept klasöründe cinsiyetinize uygun stok fotoğraf bulunamadı!"}), 400
