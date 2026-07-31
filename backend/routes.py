@@ -370,13 +370,13 @@ def upload_files():
 
         num_total_faces = len(all_faces_pool)
         
-        # YÜZ SAYISI KONTROLÜ: Standart modda en az 2 yüz, tema modunda yüklenen fotoğrafta en az 1 yüz yeterlidir.
-        if (not theme or theme == 'default' or theme == 'undefined') and num_total_faces < 2:
+        ## KESİN ÇÖZÜM: Eğer şablon (tema) kullanılıyorsa VEYA toplam yüz sayısı 1 ve üzeri ise hata verme, 
+# sadece standart modda ve 2'den az yüz varsa engelle.
+        if not used_theme and theme == 'default' and num_total_faces < 2:
             return jsonify({'success': False, 'error': f"Standart modda en az 2 yüz olmalı! (Bulunan: {num_total_faces})"}), 400
-        if theme and theme != 'default' and theme != 'undefined' and num_total_faces < 1:
+
+        if num_total_faces < 1:
             return jsonify({'success': False, 'error': "Lütfen yüz içeren bir fotoğraf yükleyin!"}), 400
-        if used_theme and len(target_images_data) == 0:
-            return jsonify({'success': False, 'error': "Bu konsept klasöründe cinsiyetinize uygun stok fotoğraf bulunamadı!"}), 400
 
         if swap_mode == 'fixed' and num_total_faces > 0:
             chosen_source_face = all_faces_pool[0]

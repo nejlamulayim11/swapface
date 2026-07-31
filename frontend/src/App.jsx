@@ -352,9 +352,8 @@ function App() {
     const formData = new FormData();
     files.forEach(file => formData.append('file', file));
     formData.append('swap_mode', swapMode);
-    formData.append('theme', theme); 
-    formData.append('mode', theme); 
-
+    formData.append('theme', theme || 'default'); 
+    formData.append('mode', theme || 'default');
     setLoading(true); 
     setErrorMsg(''); 
     setProgress(15); 
