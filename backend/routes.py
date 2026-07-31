@@ -316,7 +316,7 @@ def upload_files():
         if len(all_faces_pool) > 0:
             user_gender = get_sex(all_faces_pool[0])
 
-        # KESİN ÇÖZÜM: Hangi mod seçilirse seçilsin (child, 1980 vb.), tema klasörünü bul ve eşleştir
+        # Hangi tema seçilirse seçilsin klasörden fotoğrafları çek
         if theme and theme != 'default' and theme != 'undefined':
             theme_folder = os.path.join(config.THEMES_BASE_FOLDER, theme)
             if os.path.exists(theme_folder):
@@ -340,15 +340,11 @@ def upload_files():
 
         num_total_faces = len(all_faces_pool)
         
-        # MUTLAK YÜZ KONTROLÜ: Standart modda min 2 yüz, Konsept modlarında tek fotoğraf (min 1 yüz) yeterlidir!
-        is_concept_mode = theme and theme != 'default' and theme != 'undefined'
-        
-        if not is_concept_mode and num_total_faces < 2:
-            return jsonify({'success': False, 'error': f"Standart modda en az 2 yüz olmalı! (Bulunan: {num_total_faces})"}), 400
-        
-        if is_concept_mode and num_total_faces < 1:
-            return jsonify({'success': False, 'error': "Lütfen yüz içeren bir fotoğraf yükleyin!"}), 400
-            
+        # KESİN ÇÖZÜM: Yüklenen fotoğrafta EN AZ 1 YÜZ olması yeterlidir. 
+        # Böylece hangi modda olursanız olun "en az 2 yüz" hatası KESİNLİKLE ortadan kalkar!
+        if num_total_faces < 1:
+            return jsonify({'success': False, 'error': "Lütfen içinde yüz bulunan bir fotoğraf yükleyin!"}), 400
+
         if used_theme and len(target_images_data) == 0:
             return jsonify({'success': False, 'error': "Bu konsept klasöründe cinsiyetinize uygun stok fotoğraf bulunamadı!"}), 400
 
@@ -485,6 +481,7 @@ def update_user_role(target_user_id):
     users_collection.update_one({'_id': ObjectId(target_user_id)}, {'$set': {'role': new_role, 'scopes': new_scopes}})
     return jsonify({'success': True, 'message': 'Rol güncellendi.'})
 
+@api_bp.uploads_folder = getattr(config, 'BASE_UPLOAD_FOLDER', 'uploads')
 @api_bp.route('/admin/users/<target_user_id>/revoke-sessions', methods=['POST'])
 def revoke_user_sessions(target_user_id):
     users_collection.update_one({'_id': ObjectId(target_user_id)}, {'$inc': {'token_version': 1}})
@@ -502,7 +499,6 @@ def delete_user(target_user_id):
     history_collection.delete_many({'user_id': target_user_id})
     return jsonify({'success': True, 'message': 'Kullanıcı silindi.'})
 
-@api_bp.uploads_folder = getattr(config, 'BASE_UPLOAD_FOLDER', 'uploads')
 @api_bp.route('/uploads/<path:filename>')
 def uploaded_file(filename):
     if request.args.get('dl') == '1':
