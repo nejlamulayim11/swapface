@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-const API_BASE = 'https://hyperfaceswap.com.tr/api';
-
+const API_BASE = 'http://127.0.0.1:7860';
 function App() {
   const [currentSlide, setCurrentSlide] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -637,13 +636,14 @@ function App() {
                       onDrop={handleDrop}
                       onClick={() => fileInputRef.current && fileInputRef.current.click()}
                       style={{ 
-                        background: 'rgba(0,0,0,0.4)', border: '2px dashed rgba(168,255,120,0.4)', 
-                        padding: '40px 20px', width: '100%', maxWidth: '600px', 
+                        background: previews.length > 0 ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.4)', 
+                        border: '2px dashed rgba(168,255,120,0.4)', 
+                        padding: previews.length > 0 ? '20px' : '40px 20px', 
+                        width: '100%', maxWidth: '600px', 
                         borderRadius: '20px', textAlign: 'center', color: '#fff', 
                         transition: 'all 0.3s ease', cursor: 'pointer', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.3)'
                       }}>
-                      <div style={{ fontSize: '40px', marginBottom: '15px', opacity: 0.8 }}>📁</div>
-                      <label style={{ fontFamily: 'var(--font-display)', fontSize: '18px', display: 'block', marginBottom: '15px', letterSpacing: '1px', pointerEvents: 'none' }}>FOTOĞRAFLARI SEÇ VEYA SÜRÜKLE</label>
+                      
                       <input 
                         type="file" 
                         ref={fileInputRef}
@@ -652,7 +652,22 @@ function App() {
                         onChange={handleFileChange} 
                         style={{ display: 'none' }} 
                       />
-                      <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', pointerEvents: 'none' }}>Dosyaları sürükleyip bırakabilir ya da alana tıklayarak seçebilirsiniz.</span>
+
+                      {previews.length === 0 ? (
+                        <>
+                          <div style={{ fontSize: '40px', marginBottom: '15px', opacity: 0.8 }}>📁</div>
+                          <label style={{ fontFamily: 'var(--font-display)', fontSize: '18px', display: 'block', marginBottom: '15px', letterSpacing: '1px', pointerEvents: 'none' }}>FOTOĞRAFLARI SEÇ VEYA SÜRÜKLE</label>
+                          <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.5)', pointerEvents: 'none' }}>Dosyaları sürükleyip bırakabilir ya da alana tıklayarak seçebilirsiniz.</span>
+                        </>
+                      ) : (
+                        <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', width: '100%', pointerEvents: 'none' }}>
+                          {previews.map((src, idx) => (
+                            <div key={idx} style={{ padding: '5px', background: 'rgba(255,255,255,0.1)', borderRadius: '16px', border: '1px solid rgba(168,255,120,0.3)' }}>
+                              <img src={src} alt="Preview" style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '12px' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ width: '100%', maxWidth: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px', background: 'rgba(0,0,0,0.3)', padding: '15px', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.05)' }}>
@@ -699,6 +714,7 @@ function App() {
                     </div>
                   </>
                 )}
+                
                 {loading && (
                   <div style={{ width: '100%', maxWidth: '600px', textAlign: 'center', color: '#fff', padding: '40px 0' }}>
                     <p style={{ fontFamily: 'var(--font-display)', fontSize: '18px', marginBottom: '20px', letterSpacing: '2px', color: 'var(--lime)' }}>{progressText}</p>
@@ -707,57 +723,51 @@ function App() {
                     </div>
                   </div>
                 )}
+                
                 {errorMsg && <div style={{ color: 'var(--pink)', background: 'rgba(255,0,0,0.2)', border: '1px solid var(--pink)', borderRadius: '12px', padding: '15px', fontFamily: 'var(--font-pixel)', fontSize: '14px', width: '100%', maxWidth: '600px', textAlign: 'center' }}>{errorMsg}</div>}
                 
-                {(results.length > 0 || (previews.length > 0 && results.length === 0 && !loading)) && (
+                {results.length > 0 && (
                   <div ref={resultRef} style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', animation: 'fadeIn 0.5s ease' }}>
-                    {results.length > 0 ? (
-                      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                    
+                    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px' }}>
+                      
+                      <div style={{ alignSelf: 'flex-end', display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                        <button onClick={handleReset} 
+                          style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px', cursor: 'pointer', padding: '10px 20px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.3s ease' }}>
+                          ✕ KAPAT
+                        </button>
                         
-                        <div style={{ alignSelf: 'flex-end', display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                          <button onClick={handleReset} 
-                            style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '30px', cursor: 'pointer', padding: '10px 20px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.3s ease' }}>
-                            ✕ KAPAT
-                          </button>
-                          
-                          <button onClick={(e) => handleSubmit(e)} 
-                            style={{ background: 'rgba(255,102,51,0.1)', color: 'var(--orange)', border: '1px solid var(--orange)', borderRadius: '30px', cursor: 'pointer', padding: '10px 20px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            🔄 YENİDEN OLUŞTUR
-                          </button>
-                          
-                          <a href={`${API_BASE}${activeResultUrl}?dl=1`} download 
-                            style={{ background: 'var(--lime)', color: '#000', border: 'none', borderRadius: '30px', cursor: 'pointer', padding: '10px 25px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', textDecoration: 'none', fontWeight: 'bold', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 5px 15px rgba(168,255,120,0.3)' }}>
-                            ⬇️ İNDİR
-                          </a>
-                        </div>
+                        <button onClick={(e) => handleSubmit(e)} 
+                          style={{ background: 'rgba(255,102,51,0.1)', color: 'var(--orange)', border: '1px solid var(--orange)', borderRadius: '30px', cursor: 'pointer', padding: '10px 20px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          🔄 YENİDEN OLUŞTUR
+                        </button>
                         
-                        <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '15px', background: 'rgba(0,0,0,0.4)', width: '100%', maxWidth: '700px', boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}>
-                          <div 
-                            onMouseDown={() => setHoldingCard(true)} onMouseUp={() => setHoldingCard(false)} onMouseLeave={() => setHoldingCard(false)} onTouchStart={() => setHoldingCard(true)} onTouchEnd={() => setHoldingCard(false)}
-                            style={{ position: 'relative', width: '100%', height: '500px', cursor: 'pointer', userSelect: 'none', borderRadius: '16px', overflow: 'hidden', background: '#050505', border: '1px solid rgba(255,255,255,0.05)' }}>
-                            <img src={holdingCard ? (previews[0] || '') : `${API_BASE}${activeResultUrl}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
-                            <span style={{ position: 'absolute', bottom: '20px', right: '20px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)', borderRadius: '12px', color: holdingCard ? 'var(--orange)' : 'var(--lime)', padding: '8px 16px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', border: `1px solid ${holdingCard ? 'var(--orange)' : 'var(--lime)'}`, boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
-                              {holdingCard ? '📸 ORİJİNAL' : '✨ İŞLENMİŞ'}
-                            </span>
-                          </div>
+                        <a href={`${API_BASE}${activeResultUrl}?dl=1`} download 
+                          style={{ background: 'var(--lime)', color: '#000', border: 'none', borderRadius: '30px', cursor: 'pointer', padding: '10px 25px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', textDecoration: 'none', fontWeight: 'bold', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 5px 15px rgba(168,255,120,0.3)' }}>
+                          ⬇️ İNDİR
+                        </a>
+                      </div>
+                      
+                      <div style={{ border: '1px solid rgba(255,255,255,0.1)', borderRadius: '24px', padding: '15px', background: 'rgba(0,0,0,0.4)', width: '100%', maxWidth: '700px', boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}>
+                        <div 
+                          onMouseDown={() => setHoldingCard(true)} onMouseUp={() => setHoldingCard(false)} onMouseLeave={() => setHoldingCard(false)} onTouchStart={() => setHoldingCard(true)} onTouchEnd={() => setHoldingCard(false)}
+                          style={{ position: 'relative', width: '100%', height: '500px', cursor: 'pointer', userSelect: 'none', borderRadius: '16px', overflow: 'hidden', background: '#050505', border: '1px solid rgba(255,255,255,0.05)' }}>
+                          <img src={holdingCard ? (previews[0] || '') : `${API_BASE}${activeResultUrl}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+                          <span style={{ position: 'absolute', bottom: '20px', right: '20px', background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(5px)', borderRadius: '12px', color: holdingCard ? 'var(--orange)' : 'var(--lime)', padding: '8px 16px', fontFamily: 'var(--font-display)', fontSize: '12px', letterSpacing: '1px', border: `1px solid ${holdingCard ? 'var(--orange)' : 'var(--lime)'}`, boxShadow: '0 4px 15px rgba(0,0,0,0.5)' }}>
+                            {holdingCard ? '📸 ORİJİNAL' : '✨ İŞLENMİŞ'}
+                          </span>
                         </div>
-                        {results.length > 1 && (
-                          <div style={{ display: 'flex', gap: '25px', alignItems: 'center', marginTop: '10px', background: 'rgba(0,0,0,0.5)', padding: '10px 30px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <button type="button" onClick={handlePrev} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', cursor: 'pointer' }}>◀</button>
-                            <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', color: '#fff', letterSpacing: '2px' }}>{currentIndex + 1} / {results.length}</span>
-                            <button type="button" onClick={handleNext} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', cursor: 'pointer' }}>▶</button>
-                          </div>
-                        )}
                       </div>
-                    ) : (
-                      <div style={{ display: 'flex', gap: '15px', justifyContent: 'center', flexWrap: 'wrap', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '30px', width: '100%' }}>
-                        {previews.map((src, idx) => (
-                          <div key={idx} style={{ padding: '5px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)' }}>
-                            <img src={src} alt="Preview" style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '12px' }} />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+
+                      {results.length > 1 && (
+                        <div style={{ display: 'flex', gap: '25px', alignItems: 'center', marginTop: '10px', background: 'rgba(0,0,0,0.5)', padding: '10px 30px', borderRadius: '40px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <button type="button" onClick={handlePrev} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', cursor: 'pointer' }}>◀</button>
+                          <span style={{ fontFamily: 'var(--font-display)', fontSize: '16px', color: '#fff', letterSpacing: '2px' }}>{currentIndex + 1} / {results.length}</span>
+                          <button type="button" onClick={handleNext} style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--lime)', cursor: 'pointer' }}>▶</button>
+                        </div>
+                      )}
+
+                    </div>
                   </div>
                 )}
               </div>

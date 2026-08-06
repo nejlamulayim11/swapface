@@ -28,9 +28,12 @@ api_bp = Blueprint('api', __name__)
 
 def send_email_notification(name, sender_email, message_content):
     try:
+        # Alıcı e-posta adresi yeni adresinle güncellendi
+        ALICI_MAIL = "nejlamlym13@gmail.com"
+        
         msg = MIMEMultipart()
         msg['From'] = config.MAIL_USERNAME
-        msg['To'] = config.MAIL_USERNAME
+        msg['To'] = ALICI_MAIL
         msg['Subject'] = f"🚀 HYPER FACE SWAP - Yeni İletişim Mesajı ({name})"
 
         body = f"""
@@ -40,16 +43,17 @@ def send_email_notification(name, sender_email, message_content):
         Mesaj: {message_content}
         """
         msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
         server = smtplib.SMTP(config.MAIL_SERVER, config.MAIL_PORT)
         server.starttls()
         server.login(config.MAIL_USERNAME, config.MAIL_PASSWORD)
-        server.sendmail(config.MAIL_USERNAME, config.MAIL_USERNAME, msg.as_string())
+        
+        server.sendmail(config.MAIL_USERNAME, ALICI_MAIL, msg.as_string())
         server.quit()
         return True
     except Exception as e:
         print(f"E-posta hatası: {e}")
         return False
-
 print("Yapay zeka modeli yükleniyor...")
 app_face = FaceAnalysis(name='buffalo_l', providers=['CPUExecutionProvider'])
 app_face.prepare(ctx_id=0, det_size=(640, 640))
@@ -242,8 +246,17 @@ def contact_message():
     name, email, message = data.get('name'), data.get('email'), data.get('message')
     if not name or not email or not message:
         return jsonify({'success': False, 'error': 'Tüm alanları doldurun!'}), 400
+    
+    # Veritabanına hemen kaydedelim
     messages_collection.insert_one({'name': name, 'email': email, 'message': message, 'created_at': time.time()})
-    send_email_notification(name, email, message)
+    
+    # E-postayı arkada gönderip sitenin donmasını engelleyelim
+    try:
+        import threading
+        threading.Thread(target=send_email_notification, args=(name, email, message)).start()
+    except Exception as e:
+        print(f"Mail thread hatası: {e}")
+        
     return jsonify({'success': True, 'message': 'Mesajınız iletildi!'})
 
 @api_bp.route('/upload', methods=['POST'])
@@ -482,7 +495,7 @@ def update_user_role(target_user_id):
     users_collection.update_one({'_id': ObjectId(target_user_id)}, {'$set': {'role': new_role, 'scopes': new_scopes}})
     return jsonify({'success': True, 'message': 'Rol güncellendi.'})
 
-@api_bp.uploads_folder = getattr(config, 'BASE_UPLOAD_FOLDER', 'uploads')
+api_bp.uploads_folder = getattr(config, 'BASE_UPLOAD_FOLDER', 'uploads')
 @api_bp.route('/admin/users/<target_user_id>/revoke-sessions', methods=['POST'])
 def revoke_user_sessions(target_user_id):
     users_collection.update_one({'_id': ObjectId(target_user_id)}, {'$inc': {'token_version': 1}})

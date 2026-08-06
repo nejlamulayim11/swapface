@@ -10,7 +10,8 @@ from routes import api_bp
 app = Flask(__name__)
 app.config['SECRET_KEY'] = config.SECRET_KEY
 
-CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+# CORS ayarları tüm rotaları (/*) kapsayacak ve yetkilendirme başlıklarına izin verecek şekilde güncellendi
+CORS(app, resources={r"/*": {"origins": "*"}}, allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Credentials"], supports_credentials=True)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
